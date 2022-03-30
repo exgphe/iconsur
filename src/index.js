@@ -25,12 +25,7 @@ jimp.decoders['image/jp2'] = (buffer) => {
   return { width, height, data: rgbaBuffer };
 };
 
-const fileicon = path.join(os.tmpdir(), `fileicon-${Math.random().toFixed(16).substr(2, 6)}.sh`);
-const fileiconBinaryReady = new Promise(resolve => {
-  fs.createReadStream(path.join(__dirname, 'fileicon.sh'))
-    .pipe(fs.createWriteStream(fileicon), { end: true })
-    .on('close', resolve);
-}).then(() => cp.spawnSync('chmod', ['+x', fileicon]));
+const fileicon = '/opt/homebrew/bin/fileicon';
 
 process.on('unhandledRejection', (e) => { throw e });
 process.on('uncaughtException', (e) => {
@@ -188,7 +183,7 @@ program.command('set <dir> [otherDirs...]').action(async (dir, otherDirs) => {
       const tmpFile = path.resolve(os.tmpdir(), `tmp-${Math.random().toFixed(16).substr(2, 6)}.png`);
       await image.writeAsync(tmpFile);
     
-      await fileiconBinaryReady;
+      // await fileiconBinaryReady;
       const { status } = cp.spawnSync(fileicon, ['set', appDir, tmpFile], { stdio: 'inherit' });
       if (status) {
         console.error(`Failed to set custom icon: fileicon script exited with error ${status}`);
@@ -204,7 +199,7 @@ program.command('unset <dir> [otherDirs...]').action(async (dir, otherDirs) => {
     [dir, ...otherDirs] = glob.sync(dir);
   }
 
-  await fileiconBinaryReady;
+  // await fileiconBinaryReady;
   for (let appDir of [dir, ...otherDirs]) {
     const { status } = cp.spawnSync(fileicon, ['rm', appDir], { stdio: 'inherit' });
     if (status) {
